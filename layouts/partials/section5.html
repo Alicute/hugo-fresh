@@ -21,13 +21,13 @@
           <form{{ with $action }} action="{{ . }}"{{end}}{{ with $method }} method="{{ . }}"{{end}}>
             <div class="columns is-multiline">
               <div class="column is-6">
-                <input class="input is-medium" name="name" type="text" placeholder="Enter your name">
+                <input class="input is-medium" name="name" type="text" placeholder="请输入您的姓名">
               </div>
               <div class="column is-6">
-                <input class="input is-medium" name="email" type="email" placeholder="Enter your email address">
+                <input class="input is-medium" name="email" type="email" placeholder="请输入您的邮箱">
               </div>
               <div class="column is-12">
-                <textarea class="textarea" name="message" rows="10" placeholder="Write something..."></textarea>
+                <textarea class="textarea" name="message" rows="10" placeholder="请留下您的意见或建议......"></textarea>
               </div>
               <div class="form-footer has-text-centered mt-10">
                 <button class="button cta is-large primary-btn raised is-clear">{{ $buttonText }}</button>

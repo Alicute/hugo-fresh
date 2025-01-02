@@ -10,7 +10,7 @@ footer.footer-dark {
     }
     .footer-logo {
         img {
-            height: 40px;
+            height: 100px;
         }
     }
     .footer-column {
@@ -39,6 +39,22 @@ footer.footer-dark {
             :hover {
                 color: $smoke-white;
             }
+        }
+      .level-item .qr-code {
+            position: absolute;
+            top: 30%; /* 将二维码放置在图标下方 */
+            left: 85%; /* 水平居中二维码 */
+            transform: translateX(-50%); /* 精确居中 */
+            width: 100px; /* 二维码的宽度 */
+            height: 100px; /* 二维码的高度 */
+            visibility: hidden; /* 初始时二维码隐藏 */
+            opacity: 0; /* 隐藏二维码 */
+            transition: opacity 0.3s, visibility 0.3s; /* 平滑显示二维码 */
+        }
+              /* 鼠标悬停时显示二维码 */
+        .level-item:hover .qr-code {
+            visibility: visible; /* 显示二维码 */
+            opacity: 1; /* 使二维码不透明 */
         }
     }
 }

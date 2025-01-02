@@ -9,7 +9,9 @@
     <div class="columns">
       <div class="column">
         <div class="footer-logo">
-          <img src="{{ printf "images/logos/%s" $logo | relURL }}">
+          <a href="https://lkxray.luckyhealthcare.cn/about">
+    <img src="{{ printf "images/logos/%s" $logo | relURL }}" alt="Logo" />
+</a>
         </div>
       </div>
       {{- range $quickLinks }}
@@ -35,13 +37,22 @@
           <div class="footer-header">
             <h3>{{ $socialMediaTitle }}</h3>
             <nav class="level is-mobile">
-              <div class="level-left">
-                {{- range $socialMedia }}
-                <a class="level-item" href="{{ .link }}">
-                  <span class="icon"><i class="fa fa-{{ .icon }}"></i></span>
-                </a>
-                {{- end }}
-              </div>
+<div class="level-left">
+  {{- range $socialMedia }}
+    <a class="level-item" href="{{ .link }}">
+      <span class="icon">
+        <i class="fa fa-{{ .icon }}"></i>
+      </span>
+      {{- if .qrcode }}
+        <!-- QR Code 图片放在 icon 标签外，保持独立性 -->
+<!--        <img src="{{ printf "images/logos/%s" $logo | relURL }}" alt="Logo" />-->
+<img src="{{ printf "/images/logos/%s" .qrcode | relURL }}" class="qr-code" alt="{{ .icon }} QR Code">
+
+      {{- end }}
+    </a>
+  {{- end }}
+</div>
+
             </nav>
 
             {{- if $bulmaLogo }}
@@ -53,5 +64,37 @@
         </div>
       </div>
     </div>
+         <!-- 修改为带链接的备案号 -->
+    <div class="columns">
+      <div class="column is-12">
+        <p class="has-text-centered">
+          <div class="beian-number">
+            <a href="https://beian.miit.gov.cn/#/Integrated/recordQuery?recordcode={{ .Site.Params.footer.beianhao }}" target="_blank">
+              {{ .Site.Params.footer.beianhao }}
+            </a>
+      </div>
+    </div>
+    </div>
   </div>
 </footer>
+<style>
+  /* 备案号样式 */
+  .footer .beian-number {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #555;
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .footer .beian-number a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  .footer .beian-number a:hover {
+    text-decoration: underline;
+    color: #0056b3;
+  }
+</style>

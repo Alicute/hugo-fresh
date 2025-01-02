@@ -15,16 +15,23 @@ Navbar
         box-shadow: none !important;
     }
     //Responsive menu icon
-    .navbar-burger {
-        width: 4rem;
-        height: 4rem;
-    }
+
+.navbar-burger {
+  position: absolute;
+  top: 64px;
+  right: 0.1%; /* 根据需要调整 */
+  transform: translateY(-50%);
+  z-index: 9999; /* 确保按钮位于上方 */
+}
+
+
+
     //Brand
     .navbar-brand {
         min-height: 4rem;
         img {
-            max-height: 36px !important;
-            height: 36px;
+            max-height: 52px !important;
+            height: 52px;
         }
         //Removing navbar item default hover behaviour
         &:hover {
@@ -110,6 +117,6 @@ Navbar
     z-index: 100;
     box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
     &.is-active {
-        transform: translateY(0); 
+        transform: translateY(0);
     }
 }
