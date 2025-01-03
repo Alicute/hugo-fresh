@@ -61,6 +61,13 @@
             </a>
             {{- end }}
           </div>
+            <!-- 添加联系方式 -->
+<div class="contact-info" style="margin-top: 18px; text-align: left;">
+  <p>电话：028 8616 5695</p>
+  <p>邮箱：<a href="mailto:service@luckyhealthcare.cn">service@luckyhealthcare.cn</a></p>
+  <p>地址：成都市青羊区青羊工业园T区12栋4楼</p>
+</div>
+
         </div>
       </div>
     </div>
@@ -78,6 +85,32 @@
   </div>
 </footer>
 <style>
+      /* 联系信息样式 */
+   .contact-info {
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.footer .contact-info p {
+  color: white; /* 设置“电话”、“邮箱”、“地址”等文字为白色 */
+  margin: 0;
+}
+
+
+
+.contact-info a,
+.contact-info span {
+  color: #98a9c3; /* 设置“电话”、“邮箱”、“地址”后面的具体信息颜色为 #98a9c3 */
+  text-decoration: none;
+}
+
+.contact-info a:hover {
+  text-decoration: underline;
+  color: #c2d3e8; /* 悬停效果更浅的蓝色 */
+}
+
+
+
   /* 备案号样式 */
   .footer .beian-number {
     font-size: 1rem;

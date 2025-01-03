@@ -42,8 +42,8 @@ footer.footer-dark {
         }
       .level-item .qr-code {
             position: absolute;
-            top: 30%; /* 将二维码放置在图标下方 */
-            left: 85%; /* 水平居中二维码 */
+            top: 2%; /* 将二维码放置在图标下方 */
+            left: 93%; /* 水平居中二维码 */
             transform: translateX(-50%); /* 精确居中 */
             width: 100px; /* 二维码的宽度 */
             height: 100px; /* 二维码的高度 */
