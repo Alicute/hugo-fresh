@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 10px;
+        }
+        .options {
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .output {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #f9f9f9;
+            white-space: pre-wrap;
+            min-height: 150px;
+            cursor: text;
+        }
+        .output:focus {
+            outline: 2px solid #007BFF;
+        }
+        .notification {
+            background-color: #28a745;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease-out;
+        }
+        .notification.show {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <textarea id="inputText" placeholder="请输入文本..."></textarea>
+
+        <div class="options">
+            <label>
+                <input type="checkbox" id="removeSpaces"> 去除空格
+            </label>
+            <label>
+                <input type="checkbox" id="removeNewlines"> 去除回车
+            </label>
+        </div>
+
+        <button onclick="processText()">开始去除</button>
+        <button onclick="copyText()">复制</button>
+
+        <div class="output" id="outputText" contenteditable="true">
+            <!-- 结果展示区域 -->
+        </div>
+    </div>
+
+    <div id="notification" class="notification">文本已复制到剪贴板!</div>
+
+    <script>
+        function processText() {
+            const inputText = document.getElementById('inputText').value;
+            const removeSpaces = document.getElementById('removeSpaces').checked;
+            const removeNewlines = document.getElementById('removeNewlines').checked;
+
+            let result = inputText;
+
+            if (removeSpaces) {
+                result = _.replace(result, /\s+/g, ''); // 使用 Lodash 的 replace 方法
+            }
+
+            if (removeNewlines) {
+                result = _.replace(result, /\n+/g, ''); // 移除换行符
+            }
+
+            const outputBox = document.getElementById('outputText');
+            outputBox.textContent = result;
+            outputBox.focus(); // 方便用户直接复制
+        }
+
+        function copyText() {
+            const outputBox = document.getElementById('outputText');
+
+            if (navigator.clipboard && window.isSecureContext) {
+                // 使用 Clipboard API
+                navigator.clipboard.writeText(outputBox.textContent).then(function() {
+                    showNotification('文本已复制到剪贴板!');
+                }).catch(function(error) {
+                    showNotification('复制失败: ' + error);
+                });
+            } else {
+                // 如果不支持 Clipboard API, 使用 document.execCommand
+                const range = document.createRange();
+                range.selectNode(outputBox);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                try {
+                    document.execCommand('copy');
+                    showNotification('文本已复制到剪贴板!');
+                } catch (err) {
+                    showNotification('复制失败: ' + err);
+                }
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+
+            // 2秒后自动消失
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

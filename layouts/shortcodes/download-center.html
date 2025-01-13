@@ -1,172 +1,176 @@
 <style>
-  .download-center {
-    font-family: 'Arial', sans-serif;
-    background-color: #f9f9f9;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .download-center h2, .download-center h3 {
-    color: #333;
-    margin-bottom: 15px;
-  }
-
-  .download-center .version-section {
-    display: flex;
-    justify-content: space-between;
-  }
-
-  .download-center .version-info {
-    flex: 1;
-  }
-
-.download-center .dependencies {
-  position: absolute;
-  top: 190px;
-  right: 30px;
-  padding: 10px;
-  background-color: #f1f1f1;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-  .download-center .btn {
-    display: inline-block;
-    background-color: #007bff;
-    color: #fff;
-    padding: 4px 8px;
-    margin: 10px 0;
-    border-radius: 5px;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    font-size: 16px;
-    text-align: center;
-  }
-
-  .download-center .btn:hover {
-    background-color: #0056b3;
-    transform: scale(1.05);
-  }
-
-  .download-center .btn-secondary {
-    background-color: #6c757d;
-  }
-
-  .download-center .btn-secondary:hover {
-    background-color: #5a6268;
-  }
-
-  .download-center .fa {
-    margin-right: 8px;
-  }
-
-  .download-center .version-changes ul {
-    list-style: none;
-    padding-left: 0;
-  }
-
-  .download-center .version-changes li {
-    margin-bottom: 10px;
-    font-size: 14px;
-    color: #555;
-  }
-
-  .download-center .historical-version {
-    max-height: 400px; /* 你可以根据需要调整这个值 */
-    overflow-y: auto;  /* 启用竖直方向的滚动条 */
-    margin-top: 20px;
-    padding: 20px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  .download-center .historical-version h4 {
-    color: #007bff;
-  }
-
-  .download-center .help {
-    background-color: #eef2f7;
-    padding: 20px;
-    border-radius: 8px;
-    margin-top: 20px;
-    font-size: 1em;
-  }
-
-  .download-center .help a {
-    color: #007bff;
-    text-decoration: none;
-  }
-
-  .download-center .help a:hover {
-    text-decoration: underline;
-  }
-
-  /* 动画效果 */
-  .download-center h2 {
-    animation: fadeIn 1s ease-out;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
+    .download-center {
+        font-family: 'Arial', sans-serif;
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
     }
-    to {
-      opacity: 1;
+
+    .download-center h2, .download-center h3 {
+        color: #333;
+        margin-bottom: 15px;
     }
-  }
+
+    .download-center .version-section {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .download-center .version-info {
+        flex: 1;
+    }
+
+    .download-center .dependencies {
+        position: absolute;
+        top: 190px;
+        right: 30px;
+        padding: 10px;
+        background-color: #f1f1f1;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .download-center .btn {
+        display: inline-block;
+        background-color: #007bff;
+        color: #fff;
+        padding: 4px 8px;
+        margin: 10px 0;
+        border-radius: 5px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 16px;
+        text-align: center;
+    }
+
+    .download-center .btn:hover {
+        background-color: #0056b3;
+        transform: scale(1.05);
+    }
+
+    .download-center .btn-secondary {
+        background-color: #6c757d;
+    }
+
+    .download-center .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+
+    .download-center .fa {
+        margin-right: 8px;
+    }
+
+    .download-center .version-changes ul {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .download-center .version-changes li {
+        margin-bottom: 10px;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .download-center .historical-version {
+        max-height: 400px; /* 你可以根据需要调整这个值 */
+        overflow-y: auto; /* 启用竖直方向的滚动条 */
+        margin-top: 20px;
+        padding: 20px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .download-center .historical-version h4 {
+        color: #007bff;
+    }
+
+    .download-center .help {
+        background-color: #eef2f7;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        font-size: 1em;
+    }
+
+    .download-center .help a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .download-center .help a:hover {
+        text-decoration: underline;
+    }
+
+    /* 动画效果 */
+    .download-center h2 {
+        animation: fadeIn 1s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
 </style>
 
 <div class="download-center">
-  <h2>当前版本</h2>
-  <div class="version-section">
-    <div class="version-info">
-      <h3>版本 {{ .Site.Data.downloads.current_version.version }}</h3>
-      <p>发布于: {{ .Site.Data.downloads.current_version.release_date }}</p>
-      <h4>更新内容：</h4>
-      <ul class="version-changes">
-        {{ range .Site.Data.downloads.current_version.changes }}
-          <li>{{ . }}</li>
+    <h2>当前版本</h2>
+    <div class="version-section">
+        <div class="version-info">
+            <h3>版本 {{ .Site.Data.downloads.current_version.version }}</h3>
+            <p>发布于: {{ .Site.Data.downloads.current_version.release_date }}</p>
+            <h4>更新内容：</h4>
+            <ul class="version-changes">
+                {{ range .Site.Data.downloads.current_version.changes }}
+                <li>{{ . }}</li>
+                {{ end }}
+            </ul>
+            <a href="{{ .Site.Data.downloads.current_version.download_link }}" class="btn">下载 当前版本</a>
+        </div>
+
+        <!-- 依赖部分 -->
+        <div class="dependencies">
+            <h4>依赖下载</h4>
+            <a href="{{ .Site.Data.downloads.current_version.dependencies.x64 }}" class="btn btn-secondary">下载 64
+                位依赖包（.NET 8.0.2）</a>
+            <br>
+            <a href="{{ .Site.Data.downloads.current_version.dependencies.x86 }}" class="btn btn-secondary">下载 32
+                位依赖包（.NET 8.0.2）</a>
+
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="historical-version">
+        <h2>历史版本</h2>
+        {{ range .Site.Data.downloads.previous_versions }}
+        <div class="version">
+            <h3>版本 {{ .version }}</h3>
+            <p>发布于: {{ .release_date }}</p>
+            <h4>更新内容：</h4>
+            <ul class="version-changes">
+                {{ range .changes }}
+                <li>{{ . }}</li>
+                {{ end }}
+            </ul>
+            <a href="{{ .download_link }}" class="btn btn-secondary" download>下载 版本 {{ .version }}</a>
+        </div>
+        <hr/>
         {{ end }}
-      </ul>
-      <a href="{{ .Site.Data.downloads.current_version.download_link }}" class="btn">下载 当前版本</a>
     </div>
 
-    <!-- 依赖部分 -->
-    <div class="dependencies">
-      <h4>依赖下载</h4>
-        <a href="{{ .Site.Data.downloads.current_version.dependencies.x64 }}" class="btn btn-secondary">64位依赖</a>
-        <br>
-        <a href="{{ .Site.Data.downloads.current_version.dependencies.x86 }}" class="btn btn-secondary">32位依赖</a>
+    <div class="help">
+        <h4>获取帮助</h4>
+        <p>如果你在安装过程中遇到任何问题，或者有任何关于新版本的问题，请访问我们的<a
+                href="/docs/help-document">帮助文档</a>或联系我们的支持团队。</p>
     </div>
-  </div>
-
-  <hr>
-
-  <div class="historical-version">
-    <h2>历史版本</h2>
-    {{ range .Site.Data.downloads.previous_versions }}
-      <div class="version">
-        <h3>版本 {{ .version }}</h3>
-        <p>发布于: {{ .release_date }}</p>
-        <h4>更新内容：</h4>
-        <ul class="version-changes">
-          {{ range .changes }}
-            <li>{{ . }}</li>
-          {{ end }}
-        </ul>
-        <a href="{{ .download_link }}" class="btn btn-secondary" download>下载 版本 {{ .version }}</a>
-      </div>
-      <hr />
-    {{ end }}
-  </div>
-
-  <div class="help">
-    <h4>获取帮助</h4>
-    <p>如果你在安装过程中遇到任何问题，或者有任何关于新版本的问题，请访问我们的<a href="/docs/help-document">帮助文档</a>或联系我们的支持团队。</p>
-  </div>
 </div>

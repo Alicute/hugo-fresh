@@ -28,6 +28,7 @@
             <button class="tool-button" id="rotateButton" title="旋转">旋转</button>
             <button class="tool-button" id="captureButton" title="拍照">截图</button>
             <button class="tool-button" id="contrastButton" title="反相">反相</button>
+            <button class="tool-button" id="sharpenButton" title="锐化">锐化</button>
             <!-- 更多按钮可以在这里添加 -->
         </div>
 
@@ -94,9 +95,55 @@
         }, 1000); // 1秒后自动隐藏
     }
 
+    // 获取指定位置的灰度值
+    function getGrayValueAtCoords(image, x, y) {
+        const pixelData = image.getPixelData();
+        const width = image.width;
+        const height = image.height;
+
+        if (x < 0 || x >= width || y < 0 || y >= height) {
+            return null; // 超出图像范围
+        }
+
+        // 获取像素索引
+        const index = y * width + x;
+
+        // 获取灰度值，返回的是16位的像素值
+        const grayValue = pixelData[index];
+        return grayValue;
+    }
+
+    function performSharpening(pixelData, columns, rows) {
+        const kernel = [
+            [0, -1, 0],
+            [-1, 5, -1],
+            [0, -1, 0],
+        ]; // 锐化核
+        const result = new Int16Array(pixelData.length);
+
+        // 应用卷积
+        for (let y = 1; y < rows - 1; y++) {
+            for (let x = 1; x < columns - 1; x++) {
+                let sum = 0;
+
+                for (let ky = -1; ky <= 1; ky++) {
+                    for (let kx = -1; kx <= 1; kx++) {
+                        const pixel =
+                            pixelData[(y + ky) * columns + (x + kx)];
+                        sum += pixel * kernel[ky + 1][kx + 1];
+                    }
+                }
+
+                result[y * columns + x] = Math.min(Math.max(sum, 0), 255); // 限制范围
+            }
+        }
+
+        return result;
+    }
 
     // 工具栏实现
     const toolFunctions = {
+        // 旋转
         rotateButton: function () {
             const element = document.getElementById('dicomViewer');
             if (!ensureImageLoaded(element)) return;
@@ -106,18 +153,19 @@
             cornerstone.setViewport(element, viewport);
             showToast("旋转工具已执行");
         },
+        // 截图
         captureButton: function () {
             const element = document.getElementById('dicomViewer');
             if (!ensureImageLoaded(element)) return;
             // 获取当前时间戳
-    // 获取当前时间并格式化为 yyyyMMddHHmmssSSS 格式
-    const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 17); // 去除所有非数字字符，保留年月日时分秒毫秒
+            // 获取当前时间并格式化为 yyyyMMddHHmmssSSS 格式
+            const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 17); // 去除所有非数字字符，保留年月日时分秒毫秒
 
-    // 生成4位随机数
-    const randomFourDigit = Math.floor(Math.random() * 9000) + 1000; // 生成1000到9999之间的随机数
+            // 生成4位随机数
+            const randomFourDigit = Math.floor(Math.random() * 9000) + 1000; // 生成1000到9999之间的随机数
 
-    // 组合成文件名
-    const fileName = `${timestamp}${randomFourDigit}.png`;
+            // 组合成文件名
+            const fileName = `${timestamp}${randomFourDigit}.png`;
             // 使用 html2canvas 截图
             html2canvas(element).then(canvas => {
                 // 将 Canvas 转为图片
@@ -143,6 +191,75 @@
             cornerstone.setViewport(element, viewport);
             showToast("反相功能已执行");
         },
+        // 锐化
+        sharpenButton: function () {
+            const element = document.getElementById('dicomViewer');
+            if (!ensureImageLoaded(element)) return;
+
+            const image = cornerstone.getImage(element); // 获取当前图像对象
+            const pixelData = image.getPixelData(); // 获取图像像素数据
+            const width = image.width;
+            const height = image.height;
+
+            // 锐化卷积核
+            const sharpenKernel = [
+                [-1, -1, -1],
+                [-1, 9, -1],
+                [-1, -1, -1]
+            ];
+
+
+            // 创建一个数组用于存储锐化后的像素数据
+            const sharpenedPixels = new Uint16Array(pixelData.length);
+
+            // 遍历每个像素并应用卷积操作
+            for (let y = 1; y < height - 1; y++) {
+                for (let x = 1; x < width - 1; x++) {
+                    let newValue = 0;
+
+                    // 卷积操作
+                    for (let ky = -1; ky <= 1; ky++) {
+                        for (let kx = -1; kx <= 1; kx++) {
+                            const nx = x + kx;
+                            const ny = y + ky;
+                            const pixelIndex = ny * width + nx;
+
+                            // 加权叠加邻域像素值
+                            newValue += pixelData[pixelIndex] * sharpenKernel[ky + 1][kx + 1];
+                        }
+                    }
+
+                    // 限制像素值范围在 0 到 65535 之间
+                    const currentIndex = y * width + x;
+                    sharpenedPixels[currentIndex] = Math.min(Math.max(newValue, 0), 65535);
+                }
+            }
+            console.log("开始锐化！")
+            // 计算最小值和最大值
+            const minPixelValue = sharpenedPixels.reduce((min, val) => Math.min(min, val), Infinity);
+            const maxPixelValue = sharpenedPixels.reduce((max, val) => Math.max(max, val), -Infinity);
+
+            // 创建新的图像对象
+            const sharpenedImage = Object.create(image);
+            sharpenedImage.getPixelData = function () {
+                return sharpenedPixels;
+            };
+            sharpenedImage.minPixelValue = minPixelValue;
+            sharpenedImage.maxPixelValue = maxPixelValue;
+
+            // 获取默认视图并更新
+            const viewport = cornerstone.getDefaultViewportForImage(element, sharpenedImage);
+            viewport.voi.windowWidth = maxPixelValue - minPixelValue;
+            viewport.voi.windowCenter = (maxPixelValue + minPixelValue) / 2;
+
+            // 显示锐化后的图像
+            cornerstone.displayImage(element, sharpenedImage);
+            cornerstone.setViewport(element, viewport);
+
+            console.log("锐化工具已执行")
+        }
+
+
     };
 
 
@@ -309,10 +426,25 @@
 
         // 重置为初始值
         function resetValues() {
-            // console.log('Initial values:', initialValues); // 调试输出
+            const element = document.getElementById('dicomViewer');
+
+            if (!ensureImageLoaded(element)) {
+                showToast("未加载任何图像，无法重置！");
+                return;
+            }
+
+            const image = cornerstone.getImage(element);
+
+            currentPixels = null; // 清除锐化状态
+
+            const viewport = cornerstone.getDefaultViewportForImage(element, image);
+            cornerstone.displayImage(element, image);
+            cornerstone.setViewport(element, viewport);
+
             updateUI(initialValues);
             updateInitialValues(initialValues);
-            showToast("重置成功！");
+
+            showToast("图像和控件已成功重置！");
         }
 
 
@@ -344,7 +476,6 @@
             });
         }
 
-        // 空图像检查
 
 
     });
