@@ -28,7 +28,7 @@
             <button class="tool-button" id="rotateButton" title="旋转">旋转</button>
             <button class="tool-button" id="captureButton" title="拍照">截图</button>
             <button class="tool-button" id="contrastButton" title="反相">反相</button>
-            <button class="tool-button" id="sharpenButton" title="锐化">锐化</button>
+            <button class="tool-button" id="sharpenButton" title="锐化" style="display: none">锐化</button>
             <!-- 更多按钮可以在这里添加 -->
         </div>
 
@@ -70,6 +70,14 @@
 </div>
 
 <script>
+    let initialImage = null;
+    let viewportSettings = {
+        windowWidth: null,
+        windowCenter: null,
+        zoomLevel: 0.3 // 初始缩放倍数为1
+    };
+    let currentViewport = null;
+
     // 为空检查
     function ensureImageLoaded(element) {
         if (!cornerstone || !cornerstone.getViewport(element)) {
@@ -93,52 +101,6 @@
             toast.style.display = 'none'; // 隐藏 Toast
             toast.classList.remove('show');
         }, 1000); // 1秒后自动隐藏
-    }
-
-    // 获取指定位置的灰度值
-    function getGrayValueAtCoords(image, x, y) {
-        const pixelData = image.getPixelData();
-        const width = image.width;
-        const height = image.height;
-
-        if (x < 0 || x >= width || y < 0 || y >= height) {
-            return null; // 超出图像范围
-        }
-
-        // 获取像素索引
-        const index = y * width + x;
-
-        // 获取灰度值，返回的是16位的像素值
-        const grayValue = pixelData[index];
-        return grayValue;
-    }
-
-    function performSharpening(pixelData, columns, rows) {
-        const kernel = [
-            [0, -1, 0],
-            [-1, 5, -1],
-            [0, -1, 0],
-        ]; // 锐化核
-        const result = new Int16Array(pixelData.length);
-
-        // 应用卷积
-        for (let y = 1; y < rows - 1; y++) {
-            for (let x = 1; x < columns - 1; x++) {
-                let sum = 0;
-
-                for (let ky = -1; ky <= 1; ky++) {
-                    for (let kx = -1; kx <= 1; kx++) {
-                        const pixel =
-                            pixelData[(y + ky) * columns + (x + kx)];
-                        sum += pixel * kernel[ky + 1][kx + 1];
-                    }
-                }
-
-                result[y * columns + x] = Math.min(Math.max(sum, 0), 255); // 限制范围
-            }
-        }
-
-        return result;
     }
 
     // 工具栏实现
@@ -247,11 +209,15 @@
             sharpenedImage.minPixelValue = minPixelValue;
             sharpenedImage.maxPixelValue = maxPixelValue;
 
+
+            // 使用全局存储的初始图像信息
             // 获取默认视图并更新
-            const viewport = cornerstone.getDefaultViewportForImage(element, sharpenedImage);
+            const viewport = cornerstone.getDefaultViewportForImage(element, initialImage);
             viewport.voi.windowWidth = maxPixelValue - minPixelValue;
             viewport.voi.windowCenter = (maxPixelValue + minPixelValue) / 2;
-
+            // viewport.voi.windowWidth = viewportSettings.windowWidth;
+            // viewport.voi.windowCenter = viewportSettings.windowCenter;
+            viewport.scale = viewportSettings.zoomLevel; // 设置缩放倍数
             // 显示锐化后的图像
             cornerstone.displayImage(element, sharpenedImage);
             cornerstone.setViewport(element, viewport);
@@ -301,20 +267,26 @@
             const file = event.target.files[0];
             if (file) {
                 const imageId = `wadouri:${URL.createObjectURL(file)}`;
-                cornerstone.loadImage(imageId).then(displayImage);
+                cornerstone.loadImage(imageId).then(function (image) {
+                    // currentViewport = cornerstone.getDefaultViewportForImage(element, image);  // 初始化视口
+                    displayImage(image);   // 显示图像
+                });
             }
         }
 
         // 显示图像
         function displayImage(image) {
             cornerstone.displayImage(element, image);
-            showToast("图像已成功加载并显示");
+            showToast("图像加载成功！");
             const defaultValues = calculateDefaultValues(image);
+            viewportSettings = calculateDefaultValues(image);
             updateInitialValues(defaultValues);
             updateUI(defaultValues);
             attachMouseMoveListener(image);
             // 将滚动条居中
             centerScrollView();
+            initialImage = image; // 存储每次显示的图像信息
+            console.log("存储的图像信息：", initialImage)
         }
 
         // 滚动条初始化到中间位置
@@ -345,9 +317,10 @@
             );
 
             return {
-                scale: scale || 1, // 确保 scale 有默认值
-                windowWidth: defaultWindowWidth,
                 windowCenter: defaultWindowCenter,
+                windowWidth: defaultWindowWidth,
+                scale: scale || 0.3 // 确保 scale 有默认值
+
             };
         }
 
@@ -382,6 +355,7 @@
             viewport.scale = parseFloat(zoomSlider.value);
             cornerstone.setViewport(element, viewport);
             zoomInput.value = zoomSlider.value;
+            viewportSettings.zoomLevel = zoomInput.value
         }
 
         // 通过输入框调整缩放
@@ -390,6 +364,7 @@
             viewport.scale = parseFloat(zoomInput.value);
             cornerstone.setViewport(element, viewport);
             zoomSlider.value = zoomInput.value;
+            viewportSettings.zoomLevel = zoomSlider.value
         }
 
         // 处理窗宽变化
@@ -398,6 +373,7 @@
             viewport.voi.windowWidth = parseFloat(windowWidthSlider.value);
             cornerstone.setViewport(element, viewport);
             windowWidthInput.value = windowWidthSlider.value;
+            viewportSettings.windowWidth = windowWidthInput.value
         }
 
         // 通过输入框调整窗宽
@@ -406,6 +382,7 @@
             viewport.voi.windowWidth = parseFloat(windowWidthInput.value);
             cornerstone.setViewport(element, viewport);
             windowWidthSlider.value = windowWidthInput.value;
+            viewportSettings.windowWidth = windowWidthSlider.value
         }
 
         // 处理窗位变化
@@ -414,6 +391,7 @@
             viewport.voi.windowCenter = parseFloat(windowLevelSlider.value);
             cornerstone.setViewport(element, viewport);
             windowLevelInput.value = windowLevelSlider.value;
+            viewportSettings.windowCenter = windowLevelInput.value
         }
 
         // 通过输入框调整窗位
@@ -422,6 +400,7 @@
             viewport.voi.windowCenter = parseFloat(windowLevelInput.value);
             cornerstone.setViewport(element, viewport);
             windowLevelSlider.value = windowLevelInput.value;
+            viewportSettings.windowCenter = windowLevelSlider.value
         }
 
         // 重置为初始值
@@ -432,11 +411,7 @@
                 showToast("未加载任何图像，无法重置！");
                 return;
             }
-
-            const image = cornerstone.getImage(element);
-
-            currentPixels = null; // 清除锐化状态
-
+            const image = initialImage; // 使用全局存储的初始图像信息
             const viewport = cornerstone.getDefaultViewportForImage(element, image);
             cornerstone.displayImage(element, image);
             cornerstone.setViewport(element, viewport);
@@ -475,7 +450,6 @@
                 }
             });
         }
-
 
 
     });
