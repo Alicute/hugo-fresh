@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+    <script src="/js/lodash.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,6 +29,7 @@
             padding: 10px 20px;
             cursor: pointer;
             border-radius: 5px;
+            margin-right: 5px;
         }
         button:hover {
             background-color: #0056b3;
@@ -79,6 +80,8 @@
 
         <button onclick="processText()">开始去除</button>
         <button onclick="copyText()">复制</button>
+        <button onclick="selectAllText()">选中所有</button>
+        <button onclick="clearAll()">清空所有</button>
 
         <div class="output" id="outputText" contenteditable="true">
             <!-- 结果展示区域 -->
@@ -110,10 +113,16 @@
 
         function copyText() {
             const outputBox = document.getElementById('outputText');
+            const content = outputBox.textContent.trim(); // 检查是否有结果
+
+            if (!content) {
+                showNotification('没有可复制的内容，请先进行处理!');
+                return;
+            }
 
             if (navigator.clipboard && window.isSecureContext) {
                 // 使用 Clipboard API
-                navigator.clipboard.writeText(outputBox.textContent).then(function() {
+                navigator.clipboard.writeText(content).then(function() {
                     showNotification('文本已复制到剪贴板!');
                 }).catch(function(error) {
                     showNotification('复制失败: ' + error);
@@ -131,6 +140,33 @@
                     showNotification('复制失败: ' + err);
                 }
             }
+        }
+
+        function selectAllText() {
+            const outputBox = document.getElementById('outputText');
+            const content = outputBox.textContent.trim(); // 检查是否有结果
+
+            if (!content) {
+                showNotification('没有可选中的内容，请先进行处理!');
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(outputBox);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            showNotification('内容已选中!');
+        }
+
+        function clearAll() {
+            const inputBox = document.getElementById('inputText');
+            const outputBox = document.getElementById('outputText');
+
+            inputBox.value = ''; // 清空输入框
+            outputBox.textContent = ''; // 清空输出区域
+
+            showNotification('内容已清空!');
         }
 
         function showNotification(message) {
