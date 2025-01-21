@@ -1,0 +1,70 @@
+<head>
+    <link rel="stylesheet" href="/css/helpdoc.css">
+    <script src="/js/helpdoc.js"></script>
+</head>
+
+<div class="search-container">
+    <h2>快速找到解决方案，轻松解决问题</h2>
+    <p>您可以输入遇到的问题的关键词，以便快速定位到问题</p>
+    <!-- 搜索框容器 -->
+    <div class="search-box">
+        <!-- 搜索图标 -->
+        <span class="search-icon">🔍</span>
+        <!-- 输入框 -->
+        <input
+                type="text"
+                id="search-input"
+                placeholder="搜索问题..."
+                autocomplete="off"
+        >
+        <!-- 重置按钮 -->
+        <button
+                id="reset-button"
+                class="reset-button"
+                title="重置按钮"
+        >
+            ✖️
+        </button>
+    </div>
+</div>
+
+
+<hr style="margin: 20px 0;">
+
+<div id="faq-container">
+    <!-- FAQ 项目的容器 -->
+    {{ range .Site.Data.faq }}
+    <div class="faq-item">
+        <h3 class="faq-question" onclick="toggleAnswer(this)">
+            <span class="faq-prefix">Q: &nbsp;</span>
+            <span class="faq-text">{{ .question }}</span>
+            <span class="toggle-icon">+</span>
+        </h3>
+        <div class="faq-answer">
+            {{ range .answer }}
+            <p>{{ . }}</p>
+            {{ end }}
+        </div>
+    </div>
+    {{ end }}
+</div>
+
+
+<div id="no-results-message" style="display: none; text-align: center; color: red; margin-top: 20px;">
+    未找到相关问题，请尝试其他关键词。
+</div>
+
+
+<div id="show-more-questions" style="text-align: center; margin-top: 20px;">
+    <button onclick="toggleMoreQuestions()"
+            style="padding: 10px 20px; border: none; background-color: #007BFF; color: white; border-radius: 5px; cursor: pointer;">
+        展开更多
+    </button>
+
+</div>
+
+
+<div id="end-message"
+     style="display:none; text-align:center; margin-top:20px; font-size:16px; color:#666; background-color:#f9f9f9; padding:10px; border-radius:5px; opacity:0; transition: opacity 0.5s;">
+    🎉 已经到底啦！
+</div>
