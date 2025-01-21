@@ -29,20 +29,23 @@
             <button class="tool-button" id="captureButton" title="拍照">截图</button>
             <button class="tool-button" id="contrastButton" title="反相">反相</button>
             <button class="tool-button" id="sharpenButton" title="锐化" style="display: none">锐化</button>
+            <button class="tool-button" id="doubleWireButton" title="双丝测量">双丝</button>
             <!-- 更多按钮可以在这里添加 -->
         </div>
 
         <!-- 图像展示区域 -->
-        <div id="scrollContainer" style="overflow: auto; width: 100%; height: 600px;">
+        <div id="scrollContainer" style="overflow: auto; width: 100%; height: 600px;" onwheel="event.preventDefault();">
             <div id="dicomViewer" style="position: relative;"></div>
         </div>
     </div>
 
 
     <div class="controls">
-        <div>
-            <label for="mousePosition">鼠标位置:</label>
-            <span id="mousePosition">X: 0, Y: 0, 灰度值: 0</span>
+        <div class="info-group">
+            <div class="mouse-position">
+                <label for="mousePosition">鼠标位置:</label>
+                <span id="mousePosition">X: 0, Y: 0, 灰度值: 0</span>
+            </div>
         </div>
 
         <div class="slider-group">
@@ -64,397 +67,40 @@
 
             </div>
 
+            <!-- 添加对比度控制 -->
+            <div>
+                <label for="contrastSlider">对比度:</label>
+                <input type="range" id="contrastSlider" min="0" max="2" step="0.1" value="1">
+                <input type="number" id="contrastInput" step="0.1" min="0" max="2" value="1" style="width: 60px;">
+            </div>
         </div>
 
+        <div class="histogram-container">
+            <canvas id="histogramCanvas" width="800" height="300"></canvas>
+        </div>
     </div>
 </div>
+
+<!-- 修改测量结果弹窗 -->
+<div id="doubleWireModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <div class="measurement-container">
+            <div class="profile-container">
+                <canvas id="profileCanvas" width="800" height="400"></canvas>
+            </div>
+            <div id="measurementResults">
+                <h3>测量结果</h3>
+                <div id="mtfResults" class="mtf-results"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="/js/cornerstone.js"></script>
 <script src="/js/cornerstoneWADOImageLoader.js"></script>
 <script src="/js/dicomParser.js"></script>
 <script src="/js/html2canvas.min.js"></script>
 <script src="/js/lodash.min.js"></script>
-<script>
-    let initialImage = null;
-    let viewportSettings = {
-        windowWidth: null,
-        windowCenter: null,
-        zoomLevel: 0.3 // 初始缩放倍数为1
-    };
-    let currentViewport = null;
-
-    // 为空检查
-    function ensureImageLoaded(element) {
-        if (!cornerstone || !cornerstone.getViewport(element)) {
-            showToast("请先加载图像！");
-            console.warn("未加载图像，操作被阻止。");
-            return false;
-        }
-        return true;
-    }
-
-    function showToast(message) {
-        const toast = document.getElementById('toast');
-        if (!toast) {
-            console.error("Toast element not found!");
-            return;
-        }
-        toast.textContent = message; // 设置文字内容
-        toast.style.display = 'block'; // 显示 Toast
-        toast.classList.add('show');
-        setTimeout(() => {
-            toast.style.display = 'none'; // 隐藏 Toast
-            toast.classList.remove('show');
-        }, 1000); // 1秒后自动隐藏
-    }
-
-    // 工具栏实现
-    const toolFunctions = {
-        // 旋转
-        rotateButton: function () {
-            const element = document.getElementById('dicomViewer');
-            if (!ensureImageLoaded(element)) return;
-
-            const viewport = cornerstone.getViewport(element);
-            viewport.rotation = (viewport.rotation + 90) % 360;
-            cornerstone.setViewport(element, viewport);
-            showToast("旋转工具已执行");
-        },
-        // 截图
-        captureButton: function () {
-            const element = document.getElementById('dicomViewer');
-            if (!ensureImageLoaded(element)) return;
-            // 获取当前时间戳
-            // 获取当前时间并格式化为 yyyyMMddHHmmssSSS 格式
-            const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 17); // 去除所有非数字字符，保留年月日时分秒毫秒
-
-            // 生成4位随机数
-            const randomFourDigit = Math.floor(Math.random() * 9000) + 1000; // 生成1000到9999之间的随机数
-
-            // 组合成文件名
-            const fileName = `${timestamp}${randomFourDigit}.png`;
-            // 使用 html2canvas 截图
-            html2canvas(element).then(canvas => {
-                // 将 Canvas 转为图片
-                const imageData = canvas.toDataURL('image/png');
-                // 创建一个下载链接
-                const downloadLink = document.createElement('a');
-                downloadLink.href = imageData;
-                downloadLink.download = fileName;
-                // 模拟点击以下载图片
-                downloadLink.click();
-                showToast("截图已保存！")
-            }).catch(error => {
-                showToast("截图失败：", error);
-            });
-        },
-        // 反相功能
-        contrastButton: function () {
-            const element = document.getElementById('dicomViewer');
-            if (!ensureImageLoaded(element)) return;
-
-            const viewport = cornerstone.getViewport(element);
-            viewport.invert = !viewport.invert; // 反转对比度
-            cornerstone.setViewport(element, viewport);
-            showToast("反相功能已执行");
-        },
-        // 锐化
-        sharpenButton: function () {
-            const element = document.getElementById('dicomViewer');
-            if (!ensureImageLoaded(element)) return;
-
-            const image = cornerstone.getImage(element); // 获取当前图像对象
-            const pixelData = image.getPixelData(); // 获取图像像素数据
-            const width = image.width;
-            const height = image.height;
-
-            // 锐化卷积核
-            const sharpenKernel = [
-                [-1, -1, -1],
-                [-1, 9, -1],
-                [-1, -1, -1]
-            ];
-
-
-            // 创建一个数组用于存储锐化后的像素数据
-            const sharpenedPixels = new Uint16Array(pixelData.length);
-
-            // 遍历每个像素并应用卷积操作
-            for (let y = 1; y < height - 1; y++) {
-                for (let x = 1; x < width - 1; x++) {
-                    let newValue = 0;
-
-                    // 卷积操作
-                    for (let ky = -1; ky <= 1; ky++) {
-                        for (let kx = -1; kx <= 1; kx++) {
-                            const nx = x + kx;
-                            const ny = y + ky;
-                            const pixelIndex = ny * width + nx;
-
-                            // 加权叠加邻域像素值
-                            newValue += pixelData[pixelIndex] * sharpenKernel[ky + 1][kx + 1];
-                        }
-                    }
-
-                    // 限制像素值范围在 0 到 65535 之间
-                    const currentIndex = y * width + x;
-                    sharpenedPixels[currentIndex] = Math.min(Math.max(newValue, 0), 65535);
-                }
-            }
-            console.log("开始锐化！")
-            // 计算最小值和最大值
-            const minPixelValue = sharpenedPixels.reduce((min, val) => Math.min(min, val), Infinity);
-            const maxPixelValue = sharpenedPixels.reduce((max, val) => Math.max(max, val), -Infinity);
-
-            // 创建新的图像对象
-            const sharpenedImage = Object.create(image);
-            sharpenedImage.getPixelData = function () {
-                return sharpenedPixels;
-            };
-            sharpenedImage.minPixelValue = minPixelValue;
-            sharpenedImage.maxPixelValue = maxPixelValue;
-
-
-            // 使用全局存储的初始图像信息
-            // 获取默认视图并更新
-            const viewport = cornerstone.getDefaultViewportForImage(element, initialImage);
-            viewport.voi.windowWidth = maxPixelValue - minPixelValue;
-            viewport.voi.windowCenter = (maxPixelValue + minPixelValue) / 2;
-            // viewport.voi.windowWidth = viewportSettings.windowWidth;
-            // viewport.voi.windowCenter = viewportSettings.windowCenter;
-            viewport.scale = viewportSettings.zoomLevel; // 设置缩放倍数
-            // 显示锐化后的图像
-            cornerstone.displayImage(element, sharpenedImage);
-            cornerstone.setViewport(element, viewport);
-
-            console.log("锐化工具已执行")
-        }
-
-
-    };
-
-
-    document.addEventListener('DOMContentLoaded', function () {
-        let initialValues = {}; // 存储初始值
-        const element = document.getElementById('dicomViewer');
-        cornerstone.enable(element);
-        const fileInput = document.getElementById('fileInput');
-        const resetButton = document.getElementById('dicomResetButton');
-        const zoomSlider = document.getElementById('zoomSlider');
-        const zoomInput = document.getElementById('zoomInput');
-        const windowLevelSlider = document.getElementById('windowLevelSlider');
-        const windowWidthSlider = document.getElementById('windowWidthSlider');
-        const windowLevelInput = document.getElementById('windowLevelInput');
-        const windowWidthInput = document.getElementById('windowWidthInput');
-        const mousePositionDisplay = document.getElementById('mousePosition');
-
-
-        // 初始化 DICOM 文件加载器
-        cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
-        cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
-
-        // 页面加载时绑定按钮事件
-        bindToolButtons();
-
-        //手动绑定其他事件
-        fileInput.addEventListener('change', handleFileLoad);
-        zoomSlider.addEventListener('input', handleZoomChange);
-        zoomInput.addEventListener('input', handleZoomChangeByInput);
-        windowWidthSlider.addEventListener('input', handleWindowWidthChange);
-        windowWidthInput.addEventListener('input', handleWindowWidthChangeByInput);
-        windowLevelSlider.addEventListener('input', handleWindowLevelChange);
-        windowLevelInput.addEventListener('input', handleWindowLevelChangeByInput);
-        resetButton.addEventListener('click', resetValues);
-
-
-        // 加载并显示图像
-        function handleFileLoad(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const imageId = `wadouri:${URL.createObjectURL(file)}`;
-                cornerstone.loadImage(imageId).then(function (image) {
-                    // currentViewport = cornerstone.getDefaultViewportForImage(element, image);  // 初始化视口
-                    displayImage(image);   // 显示图像
-                });
-            }
-        }
-
-        // 显示图像
-        function displayImage(image) {
-            cornerstone.displayImage(element, image);
-            showToast("图像加载成功！");
-            const defaultValues = calculateDefaultValues(image);
-            viewportSettings = calculateDefaultValues(image);
-            updateInitialValues(defaultValues);
-            updateUI(defaultValues);
-            attachMouseMoveListener(image);
-            // 将滚动条居中
-            centerScrollView();
-            initialImage = image; // 存储每次显示的图像信息
-            console.log("存储的图像信息：", initialImage)
-        }
-
-        // 滚动条初始化到中间位置
-        function centerScrollView() {
-            const scrollContainer = document.getElementById('scrollContainer');
-            const dicomViewer = document.getElementById('dicomViewer');
-
-            // 确保滚动容器存在
-            if (scrollContainer && dicomViewer) {
-                const centerX = dicomViewer.offsetWidth / 2 - scrollContainer.clientWidth / 2;
-                const centerY = dicomViewer.offsetHeight / 2 - scrollContainer.clientHeight / 2;
-
-                // 设置滚动位置
-                scrollContainer.scrollLeft = Math.max(centerX, 0);
-                scrollContainer.scrollTop = Math.max(centerY, 0);
-            }
-        }
-
-        // 计算默认值
-        function calculateDefaultValues(image) {
-            const minPixelValue = image.minPixelValue;
-            const maxPixelValue = image.maxPixelValue;
-            const defaultWindowWidth = maxPixelValue - minPixelValue;
-            const defaultWindowCenter = (maxPixelValue + minPixelValue) / 2;
-            const scale = Math.min(
-                element.offsetWidth / image.width,
-                element.offsetHeight / image.height
-            );
-
-            return {
-                windowCenter: defaultWindowCenter,
-                windowWidth: defaultWindowWidth,
-                scale: scale || 0.3 // 确保 scale 有默认值
-
-            };
-        }
-
-
-        // 更新初始值
-        function updateInitialValues(values) {
-            initialValues = values;
-            const viewport = cornerstone.getViewport(element);
-            viewport.scale = values.scale;
-            viewport.voi.windowWidth = values.windowWidth;
-            viewport.voi.windowCenter = values.windowCenter;
-            cornerstone.setViewport(element, viewport);
-        }
-
-        // 更新 UI
-        function updateUI(values) {
-            if (!values || typeof values.scale === 'undefined') {
-                console.error('Invalid values passed to updateUI:', values);
-                return;
-            }
-            zoomSlider.value = values.scale;
-            zoomInput.value = values.scale.toFixed(2);
-            windowWidthSlider.value = values.windowWidth;
-            windowWidthInput.value = values.windowWidth.toFixed(0);
-            windowLevelSlider.value = values.windowCenter;
-            windowLevelInput.value = values.windowCenter.toFixed(0);
-        }
-
-        // 处理缩放事件
-        function handleZoomChange() {
-            const viewport = cornerstone.getViewport(element);
-            viewport.scale = parseFloat(zoomSlider.value);
-            cornerstone.setViewport(element, viewport);
-            zoomInput.value = zoomSlider.value;
-            viewportSettings.zoomLevel = zoomInput.value
-        }
-
-        // 通过输入框调整缩放
-        function handleZoomChangeByInput() {
-            const viewport = cornerstone.getViewport(element);
-            viewport.scale = parseFloat(zoomInput.value);
-            cornerstone.setViewport(element, viewport);
-            zoomSlider.value = zoomInput.value;
-            viewportSettings.zoomLevel = zoomSlider.value
-        }
-
-        // 处理窗宽变化
-        function handleWindowWidthChange() {
-            const viewport = cornerstone.getViewport(element);
-            viewport.voi.windowWidth = parseFloat(windowWidthSlider.value);
-            cornerstone.setViewport(element, viewport);
-            windowWidthInput.value = windowWidthSlider.value;
-            viewportSettings.windowWidth = windowWidthInput.value
-        }
-
-        // 通过输入框调整窗宽
-        function handleWindowWidthChangeByInput() {
-            const viewport = cornerstone.getViewport(element);
-            viewport.voi.windowWidth = parseFloat(windowWidthInput.value);
-            cornerstone.setViewport(element, viewport);
-            windowWidthSlider.value = windowWidthInput.value;
-            viewportSettings.windowWidth = windowWidthSlider.value
-        }
-
-        // 处理窗位变化
-        function handleWindowLevelChange() {
-            const viewport = cornerstone.getViewport(element);
-            viewport.voi.windowCenter = parseFloat(windowLevelSlider.value);
-            cornerstone.setViewport(element, viewport);
-            windowLevelInput.value = windowLevelSlider.value;
-            viewportSettings.windowCenter = windowLevelInput.value
-        }
-
-        // 通过输入框调整窗位
-        function handleWindowLevelChangeByInput() {
-            const viewport = cornerstone.getViewport(element);
-            viewport.voi.windowCenter = parseFloat(windowLevelInput.value);
-            cornerstone.setViewport(element, viewport);
-            windowLevelSlider.value = windowLevelInput.value;
-            viewportSettings.windowCenter = windowLevelSlider.value
-        }
-
-        // 重置为初始值
-        function resetValues() {
-            const element = document.getElementById('dicomViewer');
-
-            if (!ensureImageLoaded(element)) {
-                showToast("未加载任何图像，无法重置！");
-                return;
-            }
-            const image = initialImage; // 使用全局存储的初始图像信息
-            const viewport = cornerstone.getDefaultViewportForImage(element, image);
-            cornerstone.displayImage(element, image);
-            cornerstone.setViewport(element, viewport);
-
-            updateUI(initialValues);
-            updateInitialValues(initialValues);
-
-            showToast("图像和控件已成功重置！");
-        }
-
-
-        // 附加鼠标移动事件
-        function attachMouseMoveListener(image) {
-            element.addEventListener('mousemove', function (e) {
-                const coords = cornerstone.pageToPixel(element, e.pageX, e.pageY);
-                if (coords.x >= 0 && coords.x < image.width &&
-                    coords.y >= 0 && coords.y < image.height) {
-                    const pixelData = image.getPixelData();
-                    const index = Math.floor(coords.y) * image.width + Math.floor(coords.x);
-                    const pixelValue = pixelData[index];
-                    mousePositionDisplay.textContent = `X: ${Math.floor(coords.x)}, Y: ${Math.floor(coords.y)}, 灰度值: ${pixelValue}`;
-                } else {
-                    mousePositionDisplay.textContent = 'X: -, Y: -, 灰度值: -';
-                }
-            });
-        }
-
-        // 查找工具栏的按钮
-        function bindToolButtons() {
-            Object.keys(toolFunctions).forEach(buttonId => {
-                const button = document.getElementById(buttonId);
-                if (button) {
-                    button.addEventListener("click", toolFunctions[buttonId]);
-                } else {
-                    console.warn(`按钮 ${buttonId} 未找到，检查 HTML 是否正确！`);
-                }
-            });
-        }
-
-
-    });
-</script>
+<script src="/js/dicom-web.js"></script>
+<link rel="stylesheet" href="/css/dicom-web.css">
