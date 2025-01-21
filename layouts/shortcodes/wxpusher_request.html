@@ -1,0 +1,78 @@
+
+<link rel="stylesheet" href="/css/wxpusher_card.css">
+{{ $formData := .Site.Data.form.trial_request }}
+
+<div class="form-card" id="draggable-form-card">
+    <h2>试用申请</h2>
+    <form id="dynamic-form">
+        {{ range $formData.fields }}
+            <div class="form-group">
+                <label for="{{ .name }}">{{ .label }}：</label>
+                {{ if eq .type "textarea" }}
+                    <textarea id="{{ .name }}" name="{{ .name }}" class="form-input" {{ if .required }}required{{ end }}></textarea>
+                {{ else }}
+                    <input type="{{ .type }}" id="{{ .name }}" name="{{ .name }}" class="form-input" {{ if .required }}required{{ end }}>
+                {{ end }}
+            </div>
+        {{ end }}
+        <button type="submit" class="submit-button">提交</button>
+    </form>
+
+    <div id="response-message" class="response-message" style="display:none;"></div>
+</div>
+
+<script src="/js/wxpusher.js"></script>
+<script>
+    initFormHandler({
+        appToken: "{{ $formData.appToken }}",
+        topicId: "{{ $formData.topicId }}"
+    });
+
+    // 使表单卡片可拖动
+    dragElement(document.getElementById("draggable-form-card"));
+
+    function dragElement(elmnt) {
+    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+    elmnt.onmousedown = dragMouseDown;
+
+    function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+
+        // 获取点击的初始位置
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+
+        // 标记开始拖动
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+
+        var deltaX = pos3 - e.clientX;
+        var deltaY = pos4 - e.clientY;
+
+        // 更新当前位置
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+
+        // 使用 window.requestAnimationFrame 进行平滑过渡
+        window.requestAnimationFrame(function() {
+            elmnt.style.top = (elmnt.offsetTop - deltaY) + "px";
+            elmnt.style.left = (elmnt.offsetLeft - deltaX) + "px";
+        });
+    }
+
+    function closeDragElement() {
+        // 鼠标松开时移除事件监听
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+}
+
+
+</script>
