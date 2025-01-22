@@ -1,0 +1,31 @@
+<link rel="stylesheet" href="/css/wxpusher_card.css">
+{{ $formData := .Site.Data.form.trial_request }}
+
+<div class="form-card" id="draggable-form-card">
+    <div class="collapse-btn" id="collapse-btn">—</div>
+    <h2 class="drag-handle">试用申请</h2>
+    <form id="dynamic-form">
+        {{ range $index, $field := $formData.fields }}
+            <div class="form-group">
+                <label for="input{{ $index }}">{{ .label }}：</label>
+                {{ if eq .type "textarea" }}
+                    <textarea id="input{{ $index }}" name="input{{ $index }}" class="form-input" {{ if .required }}required{{ end }}></textarea>
+                {{ else }}
+                    <input type="{{ .type }}" id="input{{ $index }}" name="input{{ $index }}" class="form-input" {{ if .required }}required{{ end }}>
+                {{ end }}
+            </div>
+        {{ end }}
+        <div id="response-message" class="response-message"></div>
+        <button type="submit" class="submit-button">提交</button>
+    </form>
+</div>
+
+<script src="/js/wxpusher.js"></script>
+<script src="/js/form-card.js"></script>
+<script>
+    initFormHandler({
+        appToken: "{{ $formData.appToken }}",
+        topicId: "{{ $formData.topicId }}"
+    });
+    initFormCard();
+</script>
