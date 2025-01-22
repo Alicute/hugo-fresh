@@ -23,9 +23,6 @@
 <script src="/js/wxpusher.js"></script>
 <script src="/js/form-card.js"></script>
 <script>
-    initFormHandler({
-        appToken: "{{ $formData.appToken }}",
-        topicId: "{{ $formData.topicId }}"
-    });
+    initFormHandler();
     initFormCard();
 </script>
