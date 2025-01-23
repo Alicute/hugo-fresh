@@ -79,27 +79,28 @@
 <!-- 修改测量结果弹窗 -->
 <div id="doubleWireModal" class="modal">
     <div class="modal-content">
-        <span class="close">&times;</span>
-        <div class="measurement-container">
-            <div class="profile-container">
-                <h3>灰度值分布曲线</h3>
-                <canvas id="profileCanvas" width="800" height="300"></canvas>
-            </div>
-            <div id="measurementResults">
-                <div class="results-header">
-                    <h3>双丝像质计测量结果</h3>
-                </div>
-                <div class="mtf-container">
-                    <div class="mtf-description">
-                        <p>MTF (调制传递函数) 测量结果：</p>
-                        <p class="mtf-note">注：显示线对分辨率 > 20% 的结果</p>
-                    </div>
-                    <div id="mtfResults" class="mtf-results"></div>
-                </div>
-            </div>
+        <span class="close" title="关闭">&times;</span>
+        <div id="measurementResults">
+            <!-- 动态内容将在这里生成 -->
         </div>
     </div>
 </div>
+
+<style>
+    .mtf-container {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #f5f5f5;
+        border-radius: 5px;
+    }
+    
+    .mtf-item {
+        margin: 5px 0;
+        padding: 5px;
+        background-color: white;
+        border-radius: 3px;
+    }
+</style>
 
 <script src="/js/cornerstone.js"></script>
 <script src="/js/cornerstoneWADOImageLoader.js"></script>
