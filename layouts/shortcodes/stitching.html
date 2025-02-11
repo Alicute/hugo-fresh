@@ -6,6 +6,7 @@
             <h3>图像列表</h3>
             <div id="controlsContainer">
                 <input type="file" id="fileInput" accept=".dcm" multiple/>
+                <label for="fileInput" class="btn">加载DICOM图像</label>
             </div>
         </div>
         <div class="image-list" id="imageList">
@@ -26,13 +27,13 @@
             <h4>图像调节</h4>
             <div class="tool-item">
                 <label>窗宽</label>
-                <input type="range" id="windowWidthSlider" min="1" max="4000" value="400">
-                <input type="number" id="windowWidthInput" min="1" max="4000" value="400">
+                <input type="range" id="windowWidthSlider" min="1" max="99999" step="1" value="0">
+                <input type="number" id="windowWidthInput" min="1" max="99999" value="0">
             </div>
             <div class="tool-item">
                 <label>窗位</label>
-                <input type="range" id="windowLevelSlider" min="-1000" max="1000" value="40">
-                <input type="number" id="windowLevelInput" min="-1000" max="1000" value="40">
+                <input type="range" id="windowLevelSlider" min="0" max="65535" step="1" value="0">
+                <input type="number" id="windowLevelInput" min="0" max="65535" value="0">
             </div>
             <div class="tool-item">
                 <button id="resetImageBtn" class="btn">重置图像</button>
