@@ -6,7 +6,6 @@
     {{ partial "css.html" . }}
      <link rel="stylesheet" href="{{ "/css/toc.css" | relURL }}">
     <link rel="stylesheet" href="{{ "/css/pdfstyle.css" | relURL }}">
-    <link rel="stylesheet" href="{{ "/css/dicom_view.css" | relURL }}">
   </head>
   <body>
     {{ if ne .Site.Params.preloader false }}
@@ -23,8 +22,8 @@
     <div id="backtotop"><a href="#"></a></div>
 
     {{ partial "javascript.html" . }}
-  <script src="{{"/js/toggleTOC.js"|relURL}}"></script>
-    <script src="{{ "/js/jquery.min.js" | relURL }}"></script>
+  <script src="{{"/js/custom/toggleTOC.js"|relURL}}"></script>
+    <script src="{{ "/js/lib/jquery.min.js" | relURL }}"></script>
 <script src="{{ "/js/fresh.js" | relURL }}"></script>
 
   </body>
