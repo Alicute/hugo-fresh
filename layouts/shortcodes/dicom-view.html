@@ -18,19 +18,18 @@
     </div>
 
     <div class="viewer-container">
-        <!-- 左侧工具栏 -->
+        <!-- 工具栏 -->
         <div class="toolbox">
             <button class="tool-button" id="rotateButton" title="旋转">旋转</button>
             <button class="tool-button" id="captureButton" title="拍照">截图</button>
             <button class="tool-button" id="contrastButton" title="反相">反相</button>
-            <button class="tool-button" id="sharpenButton" title="锐化" style="display: none">锐化</button>
             <button class="tool-button" id="doubleWireButton" title="双丝测量">双丝</button>
         </div>
 
-        <!-- 简化的 DICOM 查看器容器 -->
-        <div id="dicomViewer" class="viewer-main"></div>
+        <!-- DICOM 查看器 -->
+        <div id="dicomViewer"></div>
 
-        <!-- 右侧控制区域 -->
+        <!-- 控制区域 -->
         <div class="controls">
             <div class="info-group">
                 <div class="mouse-position">
